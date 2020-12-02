@@ -1,15 +1,12 @@
-// Aoc.cpp : This file contains the 'main' function. Program execution begins and ends there.
-// TEMPLATE
+// Aoc - 2020 day2 Password Philosophy
 #include "stdafx.h"
 #include "catch.hpp"
 #include "Utils.h"
 
-struct Solve 
+struct Solve
 {
   int sol = 0;
   int sol2 = 0;
-  set<int> hist;
-  vector<string> data;
   Solve(const string& inStr) {
     forEachRxToken(inStr, lineRxToken, [&](string line) {
       static const regex matchExp(R"~((\d+)-(\d+) (.): (\w+))~");
@@ -28,20 +25,15 @@ struct Solve
       if ((pass[start - 1] == s && pass[end - 1] != s) || (pass[end - 1] == s && pass[start - 1] != s))
         sol2++;
       });
-      
-      
   };
-    
+
   string Do()
   {
-
     return string(to_string(sol));
   }
 
-  
   string Do2()
   {
-
     return string(to_string(sol2));
   }
 };
@@ -57,11 +49,11 @@ TEST_CASE("Sample 1", "[x.]") {
 
 TEST_CASE("Part One", "[x.]") {
   cout << endl << "Part One ------------- " << endl;
-  toClipboard(Solve(ReadFileToString(L"input.txt")).Do());  
+  toClipboard(Solve(ReadFileToString(L"input.txt")).Do());
 }
 
 TEST_CASE("Part Two", "[x.]") {
   toClipboard(Solve(ReadFileToString(L"input.txt")).Do2());
- 
+
   cout << endl << "Part Two ------------- " << endl;
 }
