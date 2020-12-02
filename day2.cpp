@@ -1,40 +1,41 @@
 // Aoc - 2020 day2 Password Philosophy
-#include "stdafx.h"
-#include "catch.hpp"
 #include "Utils.h"
+#include "catch.hpp"
+#include "stdafx.h"
 
-struct Solve
-{
-  int sol = 0;
-  int sol2 = 0;
-  Solve(const string& inStr) {
-    forEachRxToken(inStr, lineRxToken, [&](string line) {
-      static const regex matchExp(R"~((\d+)-(\d+) (.): (\w+))~");
-      auto res = match_rx(line, matchExp);
-
-      int start = stoi(res[1]);
-      int end = stoi(res[2]);
-      char s = res[3].str()[0];
-      string pass = res[4];
-
-      auto c = count(pass.begin(), pass.end(), s);
-
-      if (c >= start && c <= end)
-        sol++;
-
-      if ((pass[start - 1] == s && pass[end - 1] != s) || (pass[end - 1] == s && pass[start - 1] != s))
-        sol2++;
-      });
+struct Solve {
+  struct data {
+    int start;
+    int end;
+    char ch;
+    string pass;
   };
 
-  string Do()
-  {
+  vector<data> list;
+
+  Solve(const string& inStr) {
+    forEachLine(inStr, [&](string line) {
+      static const regex matchExp(R"~((\d+)-(\d+) (.): (\w+))~");
+      auto res = match_rx(line, matchExp);
+      list.push_back({stoi(res[1]), stoi(res[2]), res[3].str()[0], res[4]});
+    });
+  };
+
+  string Do() {
+    auto sol = count_if(list.begin(), list.end(), [](data& el) {
+      auto c = count(el.pass.begin(), el.pass.end(), el.ch);
+      return c >= el.start && c <= el.end;
+    });
     return string(to_string(sol));
   }
 
-  string Do2()
-  {
-    return string(to_string(sol2));
+  string Do2() {
+    auto sol = count_if(list.begin(), list.end(), [](data& el) {
+      auto l = el.pass[el.start - 1];
+      auto r = el.pass[el.end - 1];
+      return (l == el.ch) ^ (r == el.ch);
+    });
+    return string(to_string(sol));
   }
 };
 
@@ -43,8 +44,8 @@ TEST_CASE("Sample 1", "[x.]") {
 
   REQUIRE(Solve(R"(1-3 a: abcde
 1-3 b: cdefg
-2-9 c: ccccccccc)").Do() == "2");
-
+2-9 c: ccccccccc)")
+              .Do() == "2");
 }
 
 TEST_CASE("Part One", "[x.]") {
