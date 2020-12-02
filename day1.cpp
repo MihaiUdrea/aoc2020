@@ -1,5 +1,4 @@
-// Aoc.cpp : This file contains the 'main' function. Program execution begins and ends there.
-// TEMPLATE
+// Aoc - 2020 Day1 Report Repair
 #include "stdafx.h"
 #include "catch.hpp"
 #include "Utils.h"
@@ -26,7 +25,6 @@ struct Solve
     }
     return string();
   }
-
   
   string Do2()
   {
@@ -52,7 +50,6 @@ TEST_CASE("Sample 1", "[.]") {
 299
 675
 1456)").Do() == "514579");
-
 }
 
 TEST_CASE("Part One", "[x.]") {
