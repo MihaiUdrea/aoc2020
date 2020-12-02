@@ -20,7 +20,6 @@ struct Solve
       if (hist.find(2020 - i) != hist.end())
       {
         return to_string(i * (2020 -i));
-
       }
     }
     return string();
@@ -34,7 +33,6 @@ struct Solve
         if (hist.find(2020 - i - j) != hist.end())
         {
           return to_string(i * j * (2020 - i - j));
-
         }
       }
     return string();
