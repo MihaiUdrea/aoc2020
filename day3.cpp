@@ -15,41 +15,12 @@
   #define HIDE_IF_OLD_TEST
 #endif  // THISDAY
 
-#pragma warning(disable : 4267)
-
 namespace
 {
 
-
-template <typename Container>
-auto with_index(const Container & aElem)
+struct Solve : CharMapLimits
 {
-  return _iterate_as_wrapper<_indexed_iterator<Container::iterator>, Container>(const_cast<Container&>(aElem));
-}
-
-  struct CharMapLimits2
-{
-  CharMapLimits2(const string & inStr)
-  {
-    forEachLineIdx(inStr, [&](string line, size_t idxL) {
-      for (auto [ch, idxC] : with_index(line))
-      {
-        charMap[*ch].insert({ (int)idxL, idxC, 0 });
-        idxC++;
-      }
-      limit.x++;
-      limit.y = line.size();
-    });
-  }
-
-  map<char, set<Point>> charMap;
-
-  Point limit;
-};
-
-struct Solve : CharMapLimits2
-{
-  using CharMapLimits2::CharMapLimits2;
+  using CharMapLimits::CharMapLimits;
 
   string Do()
   { 
