@@ -115,7 +115,7 @@ struct Solve
         {
           if (height[1].matched)
           {
-            // cm 150 193
+            // cm
             if (pass.hgt < 150 || pass.hgt > 193)
               continue; 
           }
@@ -123,18 +123,18 @@ struct Solve
             continue; 
         }
         
-        static const regex HairExp(R"~(#[0-9a-f]*)~");
+        static const regex HairExp(R"~(#[0-9a-f]{6})~");
         static const regex ECLExp(R"~(amb|blu|brn|gry|grn|hzl|oth)~");
-        static const regex PIDExp(R"~([0-9]*)~");
+        static const regex PIDExp(R"~([0-9]{9})~");
 
         auto hair = match_rx(pass.raw["hcl"], HairExp);
-        if (hair.empty() || hair[0].length() != 7)
+        if (hair.empty())
           continue;
         auto ecl  = match_rx(pass.raw["ecl"], ECLExp);
         if (ecl.empty())
           continue;
         auto pid = match_rx(pass.raw["pid"], PIDExp);
-        if (pid.empty() || pid[0].length() != 9)
+        if (pid.empty())
           continue;
 
         valid++;
