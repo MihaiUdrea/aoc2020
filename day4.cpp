@@ -1,11 +1,11 @@
-﻿// day4 - 2020 Day ? ?????????
+// day4 - 2020 Day ? ?????????
 #include "stdafx.h"
 #include "Utils.h"
 
-//#define THISDAY "day4"
+#define THISDAY "day4"
 
-//#define FIRST_STAR  ""
-//#define SECOND_STAR ""
+#define FIRST_STAR  "254"
+#define SECOND_STAR "184"
 
 #ifdef THISDAY
   #define TODAY THISDAY "/"
@@ -151,7 +151,7 @@ struct Solve
 
 TEST_CASE(TODAY "Sample 1", HIDE_IF_OLD_TEST "[.]")
 {
-  cout << endl << "Tests   ------------- " << endl;
+  
 
   REQUIRE(Solve(1 + R"(
 ecl:gry pid:860033327 eyr:2020 hcl:#fffffd
@@ -172,7 +172,7 @@ iyr:2011 ecl:brn hgt:59in)")
 
 TEST_CASE(TODAY "Sample 2", HIDE_IF_OLD_TEST "[.]")
 {
-  cout << endl << "Tests   ------------- " << endl;
+  
 
   REQUIRE(Solve(1 + R"(
 pid:087499704 hgt:74in ecl:grn iyr:2012 eyr:2030 byr:1980
@@ -192,7 +192,7 @@ iyr:2010 hgt:158cm hcl:#b6652a ecl:blu byr:1944 eyr:2021 pid:093154719)")
 
 TEST_CASE(TODAY "Sample 3", HIDE_IF_OLD_TEST "[.]")
 {
-  cout << endl << "Tests   ------------- " << endl;
+  
 
   REQUIRE(Solve(1 + R"(
 eyr:1972 cid:100
@@ -212,7 +212,7 @@ pid:3556412378 byr:2007
             .Do2() == "0");
 }
 
-TEST_CASE(TODAY "Part One", HIDE_IF_OLD_TEST "[.]")
+TEST_CASE(TODAY "Part One", HIDE_IF_OLD_TEST "[x.]")
 {
 #ifdef FIRST_STAR
   REQUIRE(Solve(ReadFileToString(TODAY "input.txt")).Do() == FIRST_STAR);
