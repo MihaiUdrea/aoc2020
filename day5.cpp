@@ -1,8 +1,7 @@
-﻿// day5 - 2020 Day ? ?????????
+// day5 - 2020  Binary Boarding
 #include "stdafx.h"
 #include "Utils.h"
 
-//#include <boost/range/adaptor/indexed.hpp>
 
 #define THISDAY "day5"
 
@@ -19,24 +18,12 @@
 
 // disable conversion warning
 #pragma warning(disable : 4267)
-
+#pragma warning(disable : 4244)
 
 namespace
 {
 struct Solve
 {
-  /** /
-  struct data
-  {
-    int    start;
-    int    end;
-    char   ch;
-    string pass;
-  };
-
-  vector<data> list;
-  /**/
-
   set<Point>     hist;
   vector<string> input;
 
@@ -50,20 +37,18 @@ struct Solve
     string x;
     string y;
     for (auto ch : str)
-      if (ch == 'F')
+      switch (ch)
       {
+      case 'F':
         y += '0';
-      }
-      else if (ch == 'B')
-      {
+        break;
+      case 'B':
         y += '1';
-      }
-      else if (ch == 'R')
-      {
+        break;
+      case 'R':
         x += '1';
-      }
-      else if (ch == 'L')
-      {
+        break;
+      case 'L':
         x += '0';
       }
     Point p{ stoi(x,0,2), stoi(y,0,2), 0 };
