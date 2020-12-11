@@ -233,6 +233,16 @@ struct Point
       break;
     }
   }
+
+  bool Inside(Point A, Point B = { 0, 0, 0 }) 
+  { 
+    for (auto i = 0; i < 3; i++)
+    {
+      if (GetAxys(i) < B.GetAxys(i) || GetAxys(i) >= A.GetAxys(i))
+        return false;
+    }
+    return true;
+  }
 };
 
 struct CharMapLimits
@@ -243,14 +253,18 @@ struct CharMapLimits
       for (auto [ch, idxC] : with_index(line))
       {
         charMap[*ch].insert({ (int)idxL, idxC, 0 });
+        ptMap[{ (int)idxL, idxC, 0 }] = *ch;
         idxC++;
       }
       limit.x++;
       limit.y = line.size();
     });
+
+    limit.z = 1;
   }
 
   map<char, set<Point>> charMap;
+  map<Point, char> ptMap;
 
   Point limit;
 };
@@ -312,7 +326,7 @@ string to2Ds(const _Col &                                                    _Co
   for_each(_Collection.begin(), _Collection.end(), [&](auto & el) {
     Point pt = toPtFct(el, idx++);
 
-    if (mode & to2DsFlags::depth_on == 0)
+    if ((mode & to2DsFlags::depth_on) == 0)
       pt.z = 0;
 
     string str   = toStringFct(el);
@@ -346,7 +360,7 @@ string to2Ds(const _Col &                                                    _Co
   int minPlane = min.z;
   int maxPlane = max.z + 1;
 
-  if (mode & to2DsFlags::depth_on == 0)
+  if ((mode & to2DsFlags::depth_on) == 0)
   {
     minPlane = 0;
     maxPlane = 1;
@@ -416,5 +430,19 @@ string to2Ds(const _Col &                                                    _Co
 
   return out.str();
 }
+
+struct whileTrue
+{
+  bool v = true;
+
+  void KeepGoing() { v = true; }
+
+  operator bool()
+  {
+    auto val = v;
+    v        = false;
+    return val;
+  }
+};
 
 #endif  // UTILS_H
