@@ -1,4 +1,4 @@
-﻿// day11 - 2020 Day ? ?????????
+// day11 - 2020 Day ? ?????????
 #include "stdafx.h"
 #include "Utils.h"
 
@@ -17,35 +17,20 @@
 
 // disable conversion warning
 #pragma warning(disable : 4267)
+#pragma warning(disable : 4244)
 
 
 namespace
 {
 struct Solve : CharMapLimits
 {
-  /** /
-  struct data
-  {
-    int    start;
-    int    end;
-    char   ch;
-    string pass;
-  };
-
-  vector<data> list;
-  /**/
-
-  vector<string> input;
-
   using CharMapLimits::CharMapLimits;
 
-  string Do() { 
-
-    bool                  changed    = false;
-
-    do
+  string Do() 
+  { 
+    for (bool changed = true; changed;)
     {
-      changed                          = false;
+      changed = false;
       map<char, set<Point>> newCharMap = charMap;
       for (auto lx : irange(0, limit.x))
         for (auto ly : irange(0, limit.y))
@@ -61,17 +46,17 @@ struct Solve : CharMapLimits
               Point deltaPt{ dlx, dly, 0 };
 
               Point neighPt = pt + deltaPt;
-              if (charMap['#'].find(neighPt) != charMap['#'].end())
+              if (charMap['#'].contains(neighPt))
                 neighOcupied++;
             }
 
-          if (charMap['L'].find(pt) != charMap['L'].end() && neighOcupied == 0)
+          if (charMap['L'].contains(pt) && neighOcupied == 0)
           {
             newCharMap['L'].erase(pt);
             newCharMap['#'].insert(pt);
             changed = true;
           }
-          else if (charMap['#'].find(pt) != charMap['#'].end() && neighOcupied >= 4)
+          else if (charMap['#'].contains(pt) && neighOcupied >= 4)
           {
             newCharMap['#'].erase(pt);
             newCharMap['L'].insert(pt);
@@ -111,29 +96,27 @@ struct Solve : CharMapLimits
           cout << ss;
         }
       }
-    } while (changed);
+    }
 
     return to_string(charMap['#'].size()); 
   }
 
   string Do2() {
-    
-    
-    bool changed = false;
-
-    do
+    for (bool changed = true; changed;)
     {
-      changed                          = false;
+      changed = false;
       map<char, set<Point>> newCharMap = charMap;
       for (auto lx : irange(0, limit.x))
         for (auto ly : irange(0, limit.y))
         {
           Point pt{ lx, ly, 0 };
+
+          if (charMap['.'].contains(pt))
+            continue;
+
           int   neighOcupied = 0;
           
-          int maxX = max(lx, limit.x - lx);
-          int maxY = max(ly, limit.y - ly);
-          int themax = max(maxX, maxY);
+          int themax = max(max(lx, limit.x - lx), max(ly, limit.y - ly));
 
           set<Point> found;
           for (auto i = 1; i <= themax && found.size() < 8; i++)
@@ -145,7 +128,7 @@ struct Solve : CharMapLimits
 
               Point dir{ dlx, dly, 0 };
 
-              if (found.find(dir) != found.end())
+              if (found.contains(dir))
                 continue;
 
               Point deltaPt{ dlx * i, dly * i, 0 };
@@ -158,24 +141,24 @@ struct Solve : CharMapLimits
                 continue;
 
 
-              if (charMap['#'].find(neighPt) != charMap['#'].end())
+              if (charMap['#'].contains(neighPt))
               {
                 neighOcupied++;
                 found.insert(dir);
               }
-              else if (charMap['L'].find(neighPt) != charMap['L'].end())
+              else if (charMap['L'].contains(neighPt))
               {
                 found.insert(dir);
               }
             }
 
-          if (charMap['L'].find(pt) != charMap['L'].end() && neighOcupied == 0)
+          if (charMap['L'].contains(pt) && neighOcupied == 0)
           {
             newCharMap['L'].erase(pt);
             newCharMap['#'].insert(pt);
             changed = true;
           }
-          else if (charMap['#'].find(pt) != charMap['#'].end() && neighOcupied >= 5)
+          else if (charMap['#'].contains(pt) && neighOcupied >= 5)
           {
             newCharMap['#'].erase(pt);
             newCharMap['L'].insert(pt);
@@ -195,14 +178,13 @@ struct Solve : CharMapLimits
             return Point{ l.y, l.x, 0 };
           },
           [&](auto & l) {
-            return charMap['L'].find(l) != charMap['L'].end() ? "L"s : "#"s;
+            return charMap['L'].contains(l) ? "L"s : "#"s;
           },
           to2DsFlags::no_header, '.', 1);
 
         cout << ss;
       }
-    } while (changed);
-
+    }
     return to_string(charMap['#'].size()); 
 
     return to_string(2); }
