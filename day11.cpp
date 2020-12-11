@@ -26,168 +26,92 @@ struct Solve : CharMapLimits
 {
   using CharMapLimits::CharMapLimits;
 
-  string Do() 
-  { 
+  set<Point> directions = { Point{ 1, 0, 0 },  { -1, 0, 0 }, { 0,  1, 0 }, {  0, -1, 0 },
+                                 { 1, 1, 0 },  { -1, 1, 0 }, { 1, -1, 0 }, { -1, -1, 0 } };
+
+  string Work(int C1, int C2, bool longSearch)
+  {
     for (bool changed = true; changed;)
     {
       changed = false;
-      map<char, set<Point>> newCharMap = charMap;
-      for (auto lx : irange(0, limit.x))
-        for (auto ly : irange(0, limit.y))
+      map<char, map<Point, int>> neighCount;
+
+      for (auto ch : { 'L', '#' })
+        for (auto pt : charMap[ch])
+          neighCount[ch][pt] = GetNeighbourCount(pt, longSearch);
+
+      for (auto [pt, neighOcupied] : neighCount['L'])
+        if (neighOcupied == C1)
         {
-          Point pt{ lx, ly, 0 };
-          int   neighOcupied = 0;
-          for (auto dlx : irange(-1, 2))
-            for (auto dly : irange(-1, 2))
-            {
-              if (dlx == 0 && dly == 0)
-                continue;
-
-              Point deltaPt{ dlx, dly, 0 };
-
-              Point neighPt = pt + deltaPt;
-              if (charMap['#'].contains(neighPt))
-                neighOcupied++;
-            }
-
-          if (charMap['L'].contains(pt) && neighOcupied == 0)
-          {
-            newCharMap['L'].erase(pt);
-            newCharMap['#'].insert(pt);
-            changed = true;
-          }
-          else if (charMap['#'].contains(pt) && neighOcupied >= 4)
-          {
-            newCharMap['#'].erase(pt);
-            newCharMap['L'].insert(pt);
-            changed = true;
-          }
+          charMap['L'].erase(pt);
+          charMap['#'].insert(pt);
+          changed = true;
         }
-      charMap = std::move(newCharMap);
-      if (false)
-      {
-        if (!charMap['#'].empty())
+      for (auto [pt, neighOcupied] : neighCount['#'])
+        if (neighOcupied >= C2)
         {
-          auto ss = to2Ds(
-            charMap['#'],
-            [](auto & l, auto pos) {
-              return Point{ l.y, l.x, 0 };
-            },
-            [](auto & l) {
-              return "#"s;
-            },
-            to2DsFlags::full_header, '.', 1);
-
-          cout << ss;
+          charMap['#'].erase(pt);
+          charMap['L'].insert(pt);
+          changed = true;
         }
 
-        if (!charMap['L'].empty())
-        {
-          auto ss = to2Ds(
-            charMap['L'],
-            [](auto & l, auto pos) {
-              return Point{ l.y, l.x, 0 };
-            },
-            [](auto & l) {
-              return "L"s;
-            },
-            to2DsFlags::full_header, '.', 1);
-
-          cout << ss;
-        }
-      }
+      //Print();
     }
 
-    return to_string(charMap['#'].size()); 
+    return to_string(charMap['#'].size());
   }
 
-  string Do2() {
-    for (bool changed = true; changed;)
-    {
-      changed = false;
-      map<char, set<Point>> newCharMap = charMap;
-      for (auto lx : irange(0, limit.x))
-        for (auto ly : irange(0, limit.y))
+  int GetNeighbourCount(Point pt, bool longSearch)
+  {
+    if (!longSearch)
+      return count_if(directions.begin(), directions.end(), [&](auto deltaPt) {
+        return charMap['#'].contains(pt + deltaPt);
+      });
+
+    // part2
+    
+    return count_if(directions.begin(), directions.end(), [&](auto d) 
+      {
+        for (auto i = 1;; ++i)
         {
-          Point pt{ lx, ly, 0 };
-
-          if (charMap['.'].contains(pt))
-            continue;
-
-          int   neighOcupied = 0;
-          
-          int themax = max(max(lx, limit.x - lx), max(ly, limit.y - ly));
-
-          set<Point> found;
-          for (auto i = 1; i <= themax && found.size() < 8; i++)
-          for (auto dlx : irange(-1, 2))
-            for (auto dly : irange(-1, 2))
-            {
-              if (dlx == 0 && dly == 0)
-                continue;
-
-              Point dir{ dlx, dly, 0 };
-
-              if (found.contains(dir))
-                continue;
-
-              Point deltaPt{ dlx * i, dly * i, 0 };
-
-              Point neighPt = pt + deltaPt;
-
-              if (neighPt.x < 0 || neighPt.x >= limit.x)
-                continue;
-              if (neighPt.y < 0 || neighPt.y >= limit.y)
-                continue;
-
-
-              if (charMap['#'].contains(neighPt))
-              {
-                neighOcupied++;
-                found.insert(dir);
-              }
-              else if (charMap['L'].contains(neighPt))
-              {
-                found.insert(dir);
-              }
-            }
-
-          if (charMap['L'].contains(pt) && neighOcupied == 0)
+          Point deltaPt{ d.x * i, d.y * i, 0 };
+          Point neighPt = pt + deltaPt;
+      
+          if (!neighPt.Inside(limit))
+            return false;
+      
+          if (charMap['#'].contains(neighPt))
           {
-            newCharMap['L'].erase(pt);
-            newCharMap['#'].insert(pt);
-            changed = true;
+            return true;
           }
-          else if (charMap['#'].contains(pt) && neighOcupied >= 5)
+          else if (charMap['L'].contains(neighPt))
           {
-            newCharMap['#'].erase(pt);
-            newCharMap['L'].insert(pt);
-            changed = true;
+            return false;
           }
         }
-      charMap = std::move(newCharMap);
+      });
+  }
 
-      if (false)
-      {
-        set<Point> unionPt = charMap['#'];
-        unionPt.insert(charMap['L'].begin(), charMap['L'].end());
+  void Print() 
+  {
+    set<Point> unionPt = charMap['#'];
+    unionPt.insert(charMap['L'].begin(), charMap['L'].end());
 
-        auto ss = to2Ds(
-          unionPt,
-          [](auto & l, auto pos) {
-            return Point{ l.y, l.x, 0 };
-          },
-          [&](auto & l) {
-            return charMap['L'].contains(l) ? "L"s : "#"s;
-          },
-          to2DsFlags::no_header, '.', 1);
+    auto ss = to2Ds(
+      unionPt,
+      [](auto & l, auto pos) {
+        return Point{ l.y, l.x, 0 };
+      },
+      [&](auto & l) {
+        return charMap['L'].contains(l) ? "L"s : "#"s;
+      },
+      to2DsFlags::no_header, '.', 1);
 
-        cout << ss;
-      }
-    }
-    return to_string(charMap['#'].size()); 
+    cout << ss;
+  }
 
-    return to_string(2); }
+  string Do() { return Work(0, 4, false); }
+  string Do2() { return Work(0, 5, true); }
 };
 }  // namespace
 
