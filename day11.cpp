@@ -19,7 +19,6 @@
 #pragma warning(disable : 4267)
 #pragma warning(disable : 4244)
 
-
 namespace
 {
 struct Solve : CharMapLimits
@@ -31,9 +30,8 @@ struct Solve : CharMapLimits
 
   string Work(int C1, int C2, bool longSearch)
   {
-    for (bool changed = true; changed;)
+    for (whileTrue changed; changed;)
     {
-      changed = false;
       map<char, map<Point, int>> neighCount;
 
       for (auto ch : { 'L', '#' })
@@ -45,14 +43,14 @@ struct Solve : CharMapLimits
         {
           charMap['L'].erase(pt);
           charMap['#'].insert(pt);
-          changed = true;
+          changed.KeepGoing();
         }
       for (auto [pt, neighOcupied] : neighCount['#'])
         if (neighOcupied >= C2)
         {
           charMap['#'].erase(pt);
           charMap['L'].insert(pt);
-          changed = true;
+          changed.KeepGoing();
         }
 
       //Print();
