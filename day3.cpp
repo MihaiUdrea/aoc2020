@@ -1,4 +1,4 @@
-// Aoc - 2020 Day 3: Toboggan Trajectory
+﻿// Aoc - 2020 Day 3: Toboggan Trajectory
 #include "stdafx.h"
 #include "Utils.h"
 
@@ -15,6 +15,8 @@
   #define HIDE_IF_OLD_TEST
 #endif  // THISDAY
 
+#pragma warning(disable : 4244)
+
 namespace
 {
 
@@ -23,7 +25,19 @@ struct Solve : CharMapLimits
   using CharMapLimits::CharMapLimits;
 
   string Do()
-  { 
+  {
+    auto ss = to2Ds(
+      charMap['#'],
+      [](auto & l, auto pos) {
+        return Point{ l.y, l.x, 0 };
+      },
+      [](auto & l) {
+        return "#"s;
+      },
+      to2DsFlags::full_header, '.', 1);
+
+    cout << ss;
+
     return to_string(DoP());
   }
 
@@ -35,17 +49,25 @@ struct Solve : CharMapLimits
       if (contains(charMap['#'], Point{ il, ic % limit.y, 0 }))
         cnt++;
     }
+
     return cnt;
   }
 
   string Do2() { 
-    vector vals = {
-      pair{ 1, 1 }, { 3, 1 }, { 5, 1 }, { 7, 1 }, { 1, 2 },
-    };
+    vector vals = { pair{ 1, 1 }, { 3, 1 }, { 5, 1 }, { 7, 1 }, { 1, 2 } };
 
+    vector<int> results;
+
+    transform(vals.begin(), vals.end(), back_inserter(results), [&](auto b) {return DoP(b.first, b.second);});
+
+    return to_string(accumulate(results.begin(), results.end(), 1u, multiplies<unsigned int>()));
+
+    /** /
     return to_string(accumulate(vals.begin(), vals.end(), 1ll, [&](size_t a, auto b) {
       return a * DoP(b.first, b.second);
     }));
+    /**/
+
   }
 };
 }  // namespace

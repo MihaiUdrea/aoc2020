@@ -1,4 +1,4 @@
-// day11 - 2020 Day ? ?????????
+﻿// day11 - 2020 Day ? ?????????
 #include "stdafx.h"
 #include "Utils.h"
 
@@ -53,7 +53,7 @@ struct Solve : CharMapLimits
           changed.KeepGoing();
         }
 
-      //Print();
+      Print();
     }
 
     return to_string(charMap['#'].size());

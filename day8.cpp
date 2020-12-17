@@ -1,6 +1,7 @@
 ﻿// day8 - 2020 Day ? ?????????
 #include "stdafx.h"
 #include "Utils.h"
+#include <ranges>
 
 #define THISDAY "day8"
 
@@ -21,22 +22,32 @@
 
 namespace
 {
-struct Solve
+
+struct Program
 {
+  enum instructions
+  {
+    nop,
+    acc,
+    jmp,
+
+    max_inst
+  };
+
   struct data
   {
-    int    val;
-    
-    string inst;
+    int val;
+    int opcode;
   };
 
   vector<data> list;
-  set<int>     hist;
 
-  int            crInst = 0;
-  int            acc    = 0;
+  int crInst = 0;
+  int regAcc = 0;
 
-  Solve(const string & inStr){
+  Program(const string & inStr)
+  {
+    vector instructionsOrder{ "nop"s, "acc"s, "jmp"s };
 
     for (auto line : GetLines(inStr))
     {
@@ -46,56 +57,74 @@ struct Solve
       if (res.empty())
         continue;
 
-      list.push_back({ stoi(res[2]), res[1]});
+      auto opcode = ranges::find(instructionsOrder, res[1]) - instructionsOrder.begin();
+
+      list.push_back({ stoi(res[2]), static_cast<instructions>(opcode) });
     };
-  };
+  }
+
+  void ExecCurrent()
+  {
+    auto inst = list[crInst];
+
+    if (inst.opcode == jmp)
+      crInst += inst.val;
+    else if (inst.opcode == nop)
+      crInst++;
+    else
+    {
+      regAcc += inst.val;
+      crInst++;
+    }
+  }
+};
+
+struct Solve : Program
+{
+  set<int> hist;
+
+  Solve(const string & inStr)
+    : Program(inStr)
+  {
+  }
+
 
   string Do() { 
-    while (crInst >= 0 && crInst < list.size())
+    while (crInst >= 0 && crInst < (int) list.size())
     {
       if (hist.find(crInst) != hist.end())
-        return to_string(acc);
+        return to_string(regAcc);
 
       hist.insert(crInst);
 
-      auto inst = list[crInst];
-
-      if (inst.inst == "jmp")
-        crInst += inst.val;
-      else if (inst.inst == "nop")
-        crInst++;
-      else
-      {
-        acc += inst.val;
-        crInst++;
-      }
+      ExecCurrent();
     }
-    return to_string(acc); }
+    return to_string(regAcc); }
 
   string Do2() { 
     for (auto & inst : list)
     {
       crInst = 0;
-      acc    = 0;
+      regAcc    = 0;
       hist.clear();
 
-      if (inst.inst == "jmp")
+      if (inst.opcode == jmp)
       {
-        inst.inst = "nop";
+        inst.opcode = nop;
         Do();
-        inst.inst = "jmp";
+        inst.opcode = jmp;
       }
-      else if (inst.inst == "nop")
+      else if (inst.opcode == nop)
       {
-        inst.inst = "jmp";
+        inst.opcode = jmp;
         Do();
-        inst.inst = "nop";
+        inst.opcode = nop;
       }
       else
         continue;
 
       if (crInst == list.size())
-        return to_string(acc);
+        return to_string(regAcc);
     }
     
     return to_string(2); }

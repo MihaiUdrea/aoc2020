@@ -7,9 +7,9 @@
 
 #define DAY "DAY"
 
-string ReadFileToString(const char * aFileName);
+std::string ReadFileToString(const char * aFileName);
 
-string ToString(int aNr);
+std::string ToString(int aNr);
 
 void toClipboard(const std::string & s);
 
@@ -51,10 +51,10 @@ public:
   }
   bool operator==(const _indexed_iterator<Iterator> & rhs) const { return idx == rhs.idx; }
   bool operator!=(const _indexed_iterator<Iterator> & rhs) const { return idx != rhs.idx; }
-  pair<typename Iterator::pointer, int> operator*()
+  std::pair<typename Iterator::pointer, int> operator*()
   {
     auto r = Iterator::_Unwrapped();
-    return make_pair(r, idx);
+    return std::make_pair(r, idx);
   }
 };
 
@@ -148,28 +148,28 @@ Ret Compare(OpT aL, OpT aR, Ret LtResult, Ret EqResult, Ret GtResult)
     return GtResult;
 }
 
-const regex lineRxToken("\\n");
+const std::regex lineRxToken("\\n");
 
-void forEachRxToken(const string & inStr, const regex & sepRx, std::function<void(string)> fct);
-void forEachRxTokenIdx(const string & inStr, const regex & sepRx, std::function<void(string, size_t)> fct);
+void forEachRxToken(const std::string & inStr, const std::regex & sepRx, std::function<void(std::string)> fct);
+void forEachRxTokenIdx(const std::string & inStr, const std::regex & sepRx, std::function<void(std::string, size_t)> fct);
 
-void forEachLine(const string & inStr, std::function<void(string)> fct);
-void forEachLineIdx(const string & inStr, std::function<void(string, size_t)> fct);
+void forEachLine(const std::string & inStr, std::function<void(std::string)> fct);
+void forEachLineIdx(const std::string & inStr, std::function<void(std::string, size_t)> fct);
 
-vector<string> Tokenize(const string & inStr, const regex & sepRx);
+std::vector<std::string> Tokenize(const std::string & inStr, const std::regex & sepRx);
 
-vector<string> GetLines(const string & inStr);
+std::vector<std::string> GetLines(const std::string & inStr);
 
 // use as:
 //
 // auto res = match_rx(line, sepRx);
 template <class _StTraits, class _StAlloc, class _Elem, class _RxTraits>
-auto match_rx(const basic_string<_Elem, _StTraits, _StAlloc> & _Str,
-              const basic_regex<_Elem, _RxTraits> &            _Re,
-              regex_constants::match_flag_type _Flgs = regex_constants::match_default)
+auto match_rx(const std::basic_string<_Elem, _StTraits, _StAlloc> & _Str,
+              const std::basic_regex<_Elem, _RxTraits> &                 _Re,
+              std::regex_constants::match_flag_type _Flgs = std::regex_constants::match_default)
 {
-  match_results<typename basic_string<_Elem, _StTraits, _StAlloc>::const_iterator,
-                allocator<sub_match<basic_string<_Elem, _StTraits, _StAlloc>::const_iterator>>>
+  std::match_results<typename std::basic_string<_Elem, _StTraits, _StAlloc>::const_iterator,
+                std::allocator<std::sub_match<std::basic_string<_Elem, _StTraits, _StAlloc>::const_iterator>>>
     _Matches;
   // try to match regular expression to target text
   _Regex_match1(_Str.begin(), _Str.end(), _STD addressof(_Matches), _Re, _Flgs, true);
@@ -195,10 +195,11 @@ struct Point
   my_int x = 0;
   my_int y = 0;
   my_int z = 0;
+  my_int w = 0;
 
   auto operator<=>(const Point &) const = default;
-  auto operator+(const Point & l) const { return Point{ x + l.x, y + l.y, z + l.z }; };
-  auto operator-(const Point & l) const { return Point{ x - l.x, y - l.y, z - l.z }; };
+  auto operator+(const Point & l) const { return Point{ x + l.x, y + l.y, z + l.z, w + l.w }; };
+  auto operator-(const Point & l) const { return Point{ x - l.x, y - l.y, z - l.z, w + l.w }; };
 
   my_int GetAxys(my_int ax) const
   {
@@ -210,6 +211,8 @@ struct Point
       return y;
     case 2:
       return z;
+    case 3:
+      return w;
     default:
       break;
     }
@@ -229,14 +232,17 @@ struct Point
     case 2:
       z += v;
       break;
+    case 3:
+      z += v;
+      break;
     default:
       break;
     }
   }
 
-  bool Inside(Point A, Point B = { 0, 0, 0 }) 
+  bool Inside(Point A, Point B = { 0, 0, 0, 0 }) 
   { 
-    for (auto i = 0; i < 3; i++)
+    for (auto i = 0; i < 4; i++)
     {
       if (GetAxys(i) < B.GetAxys(i) || GetAxys(i) >= A.GetAxys(i))
         return false;
@@ -247,9 +253,9 @@ struct Point
 
 struct CharMapLimits
 {
-  CharMapLimits(const string & inStr)
+  CharMapLimits(const std::string & inStr)
   {
-    forEachLineIdx(inStr, [&](string line, size_t idxL) {
+    forEachLineIdx(inStr, [&](std::string line, size_t idxL) {
       for (auto [ch, idxC] : with_index(line))
       {
         charMap[*ch].insert({ (int)idxL, idxC, 0 });
@@ -261,10 +267,11 @@ struct CharMapLimits
     });
 
     limit.z = 1;
+    limit.w = 1;
   }
 
-  map<char, set<Point>> charMap;
-  map<Point, char> ptMap;
+  std::map<char, std::set<Point>> charMap;
+  std::map<Point, char>           ptMap;
 
   Point limit;
 };
@@ -274,7 +281,7 @@ my_int ManhDist(Point a);
 
 void toConsole(Point p, const char * c, int length, int sleep = -1);
 
-void toConsole(Point p, string c, int sleep = -1);
+void toConsole(Point p, std::string c, int sleep = -1);
 
 struct to2DsFlags
 {
@@ -289,7 +296,7 @@ struct to2DsFlags
 };
 
 template <class _Col>
-pair<Point, Point> MinMax(const _Col &                                            _Collection,
+std::pair<Point, Point> MinMax(const _Col &                                            _Collection,
                           std::function<Point(const typename _Col::value_type &)> toPtFct)
 {
   auto & flatList = _Collection;
@@ -312,24 +319,26 @@ pair<Point, Point> MinMax(const _Col &                                          
 // auto ss = to2Ds(vals, [](auto& l) { return l.x; }, [](auto& l) { return
 // string() + l.ch; }, to2DsFlags::full_header, '.', 1);
 template <class _Col>
-string to2Ds(const _Col &                                                    _Collection,
+std::string to2Ds(const _Col &                                                    _Collection,
              std::function<Point(const typename _Col::value_type &, size_t)> toPtFct,
-             std::function<string(const typename _Col::value_type &)>        toStringFct,
+             std::function<std::string(const typename _Col::value_type &, size_t)> toStringFct,
              int   mode      = to2DsFlags::no_header,
              char  fill      = ' ',
              int   charWidth = 1,
              Point min       = {},
              Point max       = {})
 {
-  map<Point, string> flatList;
+  using namespace std;
+
+  std::map<Point, std::string> flatList;
   size_t             idx = 0;
   for_each(_Collection.begin(), _Collection.end(), [&](auto & el) {
-    Point pt = toPtFct(el, idx++);
+    Point pt = toPtFct(el, idx);
 
     if ((mode & to2DsFlags::depth_on) == 0)
       pt.z = 0;
 
-    string str   = toStringFct(el);
+    std::string str = toStringFct(el, idx++);
     flatList[pt] = str;
   });
 
@@ -429,6 +438,24 @@ string to2Ds(const _Col &                                                    _Co
   // out.close();
 
   return out.str();
+}
+
+template <class _Col>
+std::string to2Ds(const _Col &                                                    _Collection,
+             std::function<Point(const typename _Col::value_type &, size_t)> toPtFct,
+             std::function<std::string(const typename _Col::value_type &)>        toStringFct,
+             int   mode      = to2DsFlags::no_header,
+             char  fill      = ' ',
+             int   charWidth = 1,
+             Point min       = {},
+             Point max       = {})
+{
+  return to2Ds(
+    _Collection, toPtFct,
+    [&](auto a, auto b) {
+      return toStringFct(a);
+    },
+    mode, fill, charWidth, min, max);
 }
 
 struct whileTrue

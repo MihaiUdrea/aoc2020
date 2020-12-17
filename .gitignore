@@ -1,0 +1,15 @@
+﻿.vs/Aoc2020/v16
+day*/
+x64
+Debug
+Release
+secrets
+*.tmp
+Aoc2020
+Aoc2020*
+catch.hpp
+template.txt
+*.txt
+*.sh
+stdafx.*
+.clang-format

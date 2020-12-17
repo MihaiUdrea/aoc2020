@@ -2,7 +2,7 @@
 #include "stdafx.h"
 #include "Utils.h"
 
-//#define THISDAY "day7"
+#define THISDAY "day7"
 
 #define FIRST_STAR  "229"
 #define SECOND_STAR "6683"
@@ -35,9 +35,6 @@ struct Solve
   Solve(const string & inStr){
     const regex rxToken(", ");
 
-    // input = GetLines();
-
-    /**/
     forEachLine(inStr, [&](string line) {
       static const regex matchExp(R"~((\w+ \w+) bags contain (.+))~");
       auto               res = match_rx(line, matchExp);
@@ -60,17 +57,7 @@ struct Solve
         dataBack[res2[2]].push_back(bcRev);
         });
     });
-    /**/
 
-    /** /
-    forEachLine(inStr, [&](string line) {
-      static const regex colsSepRx(":");
-      forEachRxToken(line, colsSepRx, [&](string chunk) {
-        int i = 0;
-        i++;
-      });
-    });
-    /**/
   };
 
   set<string> hist;

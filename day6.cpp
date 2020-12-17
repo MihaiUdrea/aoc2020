@@ -23,72 +23,28 @@ namespace
 {
 struct Solve
 {
-  /** /
-  struct data
-  {
-    int    start;
-    int    end;
-    char   ch;
-    string pass;
-  };
-
-  vector<data> list;
-  /**/
-
-  vector<string> input;
-
   vector<vector<string>> list;
 
   Solve(const string & inStr){
 
-    input = GetLines(inStr);
+    const regex doublelineRxToken("\\n\\n");
 
-    vector<string> group;
-    for (auto line : input)
-    {
-      if (line.empty())
-      {
-        list.push_back(group);
-        group.clear();
-      }
-      else
-      {
-        group.push_back(line);
-      }
-    }
-
-    list.push_back(group);
-    
-    for (auto & group : list)
-      for (auto & people : group)
-        std::sort(people.begin(), people.end());
+    forEachRxToken(inStr, doublelineRxToken, [&](string groupRaw) {
+      list.push_back({});
+      vector<string> group;
+      forEachLine(groupRaw, [&](string line) {
+        std::sort(line.begin(), line.end());
+        list.rbegin()->push_back(line);
+      });
+    });
   };
 
-  string Do() { 
-    return Both(false);
-
-    /** /
-    vector<int> results;
-    for (auto group : list)
-    {
-      set<char> inGroup;
-      for (auto people : group)
-      {
-        for (auto ch : people)
-          inGroup.insert(ch);
-      }
-      results.push_back(inGroup.size());
-    }
-
-    auto res = accumulate(results.begin(), results.end(), 0);
-
-    return to_string(res); 
-    /**/
-  }
+  string Do() { return Both(false); }
 
   string Both(bool aIntersection = false)
   {
     vector<int> results;
+
     for (auto group : list)
     {
       string intersection = group[0];

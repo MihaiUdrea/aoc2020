@@ -1,4 +1,4 @@
-// day16 - 2020 Day ? ?????????
+﻿// day16 - 2020 Day ? ?????????
 #include "stdafx.h"
 #include "Utils.h"
 
@@ -90,10 +90,11 @@ struct Solve
   string Do()
   { 
     return to_string(accumulate(nearByTicket | views::join | views::filter([&](auto no) {
-                                return find_if(list, [no](auto & field) {
-                                    return find_if(field.interval, [no](auto & interval) { 
-                                      return data::InsideInterval(interval, no); }) != field.interval.end();}) == list.end();
-                                }),0));
+                                  return !any_of(list, [no](auto & field) {
+                                    return field.Permits(no);
+                                  });
+                                }),
+                                0));
   }
 
   string Do2()

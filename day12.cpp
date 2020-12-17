@@ -146,7 +146,8 @@ struct Solve
     Point      p{};
     vector     chOfDir = { 'E', 'S', 'W', 'N' };
     Directions dir     = east;
-
+    vector<Point> lil;
+    lil.push_back(p);
     for (auto mv : list)
     {
       Point delta;
@@ -174,8 +175,23 @@ struct Solve
         break;
       }
 
-    }
+      lil.push_back(p);
 
+    }
+    
+    /** /
+     auto ss = to2Ds(
+      lil,
+      [](auto & l, auto pos) {
+        return l;
+      },
+      [&](auto & l, auto pos) {
+        return to_string(pos);
+      },
+      to2DsFlags::full_header, '.', 1);
+
+     cout << ss;
+     /**/
     return to_string(ManhDist(p));
   }
 };

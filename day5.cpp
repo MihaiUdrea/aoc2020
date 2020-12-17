@@ -1,4 +1,4 @@
-// day5 - 2020  Binary Boarding
+﻿// day5 - 2020  Binary Boarding
 #include "stdafx.h"
 #include "Utils.h"
 

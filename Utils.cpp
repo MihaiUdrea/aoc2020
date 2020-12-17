@@ -1,5 +1,7 @@
 #include "Utils.h"
 
+using namespace std;
+
 string ReadFileToString(const char * aFileName)
 {
   ifstream inFile;
