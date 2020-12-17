@@ -45,9 +45,9 @@ struct Solve
 
     bool Permits(int no)
     {
-      return find_if(interval, [no](auto & interval) {
-               return interval.first <= no && no <= interval.second;
-             }) != interval.end();
+      return any_of(interval, [no](auto & interval) {
+        return InsideInterval(interval,no);
+        });
     }
 
     vector<pair<int, int>> interval;
@@ -89,12 +89,13 @@ struct Solve
 
   string Do()
   { 
-    return to_string(accumulate(nearByTicket | views::join | views::filter([&](auto no) {
-                                  return !any_of(list, [no](auto & field) {
-                                    return field.Permits(no);
-                                  });
-                                }),
-                                0));
+    return to_string(accumulate(
+      nearByTicket | views::join | views::filter([&](auto no) {
+        return !any_of(list, [no](auto & field) {
+          return field.Permits(no);
+        });
+      }),
+      0));
   }
 
   string Do2()
@@ -116,9 +117,7 @@ struct Solve
       for (auto [idxk, no] : ticket | views::enumerate)
         for (auto [idxw, field] : list | views::enumerate)
         {
-          if (find_if(field.interval, [no](auto & interval) {
-                return data::InsideInterval(interval, no);
-              }) == field.interval.end())
+          if (!field.Permits(no))
             nokPos[idxk].insert(idxw);
         }
 
