@@ -3,17 +3,6 @@
 #include "Utils.h"
 
 
-#include <range/v3/numeric/accumulate.hpp>
-#include <range/v3/view/iota.hpp>
-#include <range/v3/view/take.hpp>
-#include <range/v3/view/transform.hpp>
-#include <range/v3/all.hpp>
-
-#include <boost/range/algorithm.hpp>
-#include <boost/range/algorithm_ext.hpp>
-#include <boost/algorithm/cxx11/copy_if.hpp>
-
-
 #define THISDAY "day16"
 
 #define FIRST_STAR  "24110"
@@ -27,9 +16,6 @@
   #define HIDE_IF_OLD_TEST
 #endif  // THISDAY
 
-// disable conversion warning
-#pragma warning(disable : 4267)
-
 using namespace ranges;
 
 //namespace
@@ -38,15 +24,10 @@ struct Solve
 {
   struct Label
   {
-    static bool InsideInterval(pair<int, int> interval, int no)
-    {
-      return interval.first <= no && no <= interval.second;
-    }
-
-    bool Permits(int no)
+    bool Allows(int no)
     {
       return any_of(interval, [no](auto & interval) {
-        return InsideInterval(interval,no);
+        return interval.first <= no && no <= interval.second;
         });
     }
 
@@ -78,27 +59,23 @@ struct Solve
       | views::join 
       | views::filter([&](auto no) {
         return !any_of(labelsList, [no](auto & field) {
-          return field.Permits(no);
-        });
-      }),
-      0));
+          return field.Allows(no);
+        });}),0));
   }
 
   string Do2()
   {
+    vector<set<int>> nokPos(labelsList.size());
+    
     auto validTicketsOp = [&](auto & ticket) { 
       return !any_of(ticket, [&](auto & no) { 
         return !any_of(labelsList, [no](auto & field) {
-          return field.Permits(no);});});};
+          return field.Allows(no);});});};
 
-    auto validTickets = nearByTicket | views::filter(validTicketsOp);
-
-    vector<set<int>> nokPos(labelsList.size());
-
-    for (auto ticket : validTickets)
+    for (auto ticket : nearByTicket | views::filter(validTicketsOp))
       for (auto [idxk, no] : ticket | views::enumerate)
         for (auto [idxw, field] : labelsList | views::enumerate)
-          if (!field.Permits(no))
+          if (!field.Allows(no))
             nokPos[idxk].insert(idxw);
 
     vector<int> goodPos(labelsList.size());
