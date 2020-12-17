@@ -101,13 +101,11 @@ struct Solve
     nearByTicket.push_back(yourTicket);
 
     auto validTicketsOp = [&](auto & ticket) {
-      return find_if(ticket, [&](auto & no) {
-               return find_if(list, [no](auto & field) {
-                        return find_if(field.interval, [no](auto & interval) {
-                                 return data::InsideInterval(interval, no);
-                               }) != field.interval.end();
-                      }) == list.end();
-             }) == ticket.end();
+      return !any_of(ticket, [&](auto & no) {
+               return !any_of(list, [no](auto & field) {
+                        return field.Permits(no);
+                      });
+             });
     };
 
     auto validTickets = nearByTicket | views::filter(validTicketsOp);
