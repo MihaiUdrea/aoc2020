@@ -13,6 +13,7 @@
 #include <boost/range/algorithm_ext.hpp>
 #include <boost/algorithm/cxx11/copy_if.hpp>
 
+
 #define THISDAY "day16"
 
 #define FIRST_STAR  "24110"
@@ -35,8 +36,7 @@ using namespace ranges;
 //{
 struct Solve
 {
-  /**/
-  struct data
+  struct Label
   {
     static bool InsideInterval(pair<int, int> interval, int no)
     {
@@ -51,47 +51,33 @@ struct Solve
     }
 
     vector<pair<int, int>> interval;
-    string                      str;
   };
 
-  vector<data> list;
-  /**/
+  vector<Label> labelsList;
 
-  vector<string>      input;
-  vector<int> yourTicket;
   vector<vector<int>> nearByTicket;
 
-  Solve(const string & inStr){
-    forEachRxTokenIdx(inStr, regex("\n\n"), [&](string chunk, int idx) {      
-      forEachLineIdx(chunk, [&](string line, int idx2) {
-        if (idx == 0)
-        {
+  Solve(const string & inStr)
+  { 
+    for (auto chunk : inStr | views::tokenize(regex("\n\n"), -1) | views::transform(to_string_view()) | views::take(1) )
+      for (auto line : chunk | views::tokenize(regex("\n"), -1) | views::transform(to_string_view()))
+      {
           auto res = match_rx(line, regex(R"~(([^:]+): (\d+)-(\d+) or (\d+)-(\d+))~"));
-          list.push_back({ { { stoi(res[2]), stoi(res[3]) }, { stoi(res[4]), stoi(res[5]) } },
-                           res[1].str() });
-        }
-        else if (idx == 1)
-        {
-          forEachRxToken(line, regex(","), [&](string nrS) {
-            try { yourTicket.push_back(stoi(nrS)); } catch (...){}
-          });         
-        }
-        else
-        {
-          nearByTicket.push_back({});
-          forEachRxToken(line, regex(","), [&](string nrS) {
-            try { nearByTicket.back().push_back(stoi(nrS));} catch (...){}
-          });
-        }
-      });
-    });
+          labelsList.push_back({ { { stoi(res[2]), stoi(res[3]) }, { stoi(res[4]), stoi(res[5]) } }});
+      }
+
+    for (auto chunk : inStr | views::tokenize(regex("\n\n"), -1) | views::transform(to_string_view()) | views::drop(1))
+      for (auto line : chunk | views::tokenize(regex("\n"), -1) | views::transform(to_string_view()) | views::drop(1))
+        nearByTicket.push_back(line | views::tokenize(regex(","), -1) | views::transform(sub_match_to_int()) | to<vector>);
   };
 
   string Do()
   { 
-    return to_string(accumulate(
-      nearByTicket | views::join | views::filter([&](auto no) {
-        return !any_of(list, [no](auto & field) {
+    return to_string(accumulate(nearByTicket 
+      | views::drop(1) // your ticket is valid but skip it for correctness
+      | views::join 
+      | views::filter([&](auto no) {
+        return !any_of(labelsList, [no](auto & field) {
           return field.Permits(no);
         });
       }),
@@ -100,44 +86,45 @@ struct Solve
 
   string Do2()
   {
-    nearByTicket.push_back(yourTicket);
-
-    auto validTicketsOp = [&](auto & ticket) {
-      return !any_of(ticket, [&](auto & no) {
-               return !any_of(list, [no](auto & field) {
-                        return field.Permits(no);
-                      });
-             });
-    };
+    auto validTicketsOp = [&](auto & ticket) { 
+      return !any_of(ticket, [&](auto & no) { 
+        return !any_of(labelsList, [no](auto & field) {
+          return field.Permits(no);});});};
 
     auto validTickets = nearByTicket | views::filter(validTicketsOp);
 
-    vector<set<int>> nokPos(list.size());
+    vector<set<int>> nokPos(labelsList.size());
+
     for (auto ticket : validTickets)
       for (auto [idxk, no] : ticket | views::enumerate)
-        for (auto [idxw, field] : list | views::enumerate)
-        {
+        for (auto [idxw, field] : labelsList | views::enumerate)
           if (!field.Permits(no))
             nokPos[idxk].insert(idxw);
-        }
 
-    vector<int> goodPos(list.size());
+    vector<int> goodPos(labelsList.size());
 
-    auto unsettled = views::iota(0) | views::take(list.size()) | to<set>();
+    auto unsettled = views::iota(0) | views::take(labelsList.size()) | to<set>();
     auto unused    = unsettled;
     
-    for (auto [field, size] : nokPos | views::enumerate | views::transform([&](auto i) { return pair<int, int>(i.first, i.second.size());}) |
-                  to<vector>() | actions::sort(greater{}, &pair<int, int>::second))
+    for (auto [field, size] : nokPos 
+      | views::enumerate 
+      | views::transform([&](auto i) { return pair<int, int>(i.first, i.second.size());}) 
+      | to<vector>() 
+      | actions::sort(greater{}, &pair<int, int>::second))
     {
-      vector<int> diff;
-      set_difference(unsettled, nokPos[field], back_inserter(diff));
+      auto newGoodPos = unsettled | views::filter([&](auto i) { 
+        return !nokPos[field].contains(i); });
 
-      goodPos[field] = diff.front();
+      goodPos[field] = *begin(newGoodPos);
 
-      unsettled.erase(diff.front());
+      unsettled.erase(*begin(newGoodPos));
     }
 
-  return to_string(accumulate(goodPos | views::enumerate | views::transform([&]( auto i ) { return i.second < 6 ? yourTicket[i.first] : 1; }), 1ll, multiplies()));
+    return to_string(accumulate(goodPos 
+      | views::enumerate 
+      | views::transform([&]( auto i ) { 
+        return i.second < 6 ? nearByTicket[0][i.first] : 1; }), 
+      1ll, multiplies()));
   }
 };
 //}  // namespace

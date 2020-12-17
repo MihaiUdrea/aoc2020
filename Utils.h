@@ -176,6 +176,21 @@ auto match_rx(const std::basic_string<_Elem, _StTraits, _StAlloc> & _Str,
   return _Matches;
 }
 
+// auto res = match_rx(line, sepRx);
+template <class _StTraits, class _Elem, class _RxTraits>
+auto match_rx(const std::basic_string_view<_Elem, _StTraits> & _Str,
+              const std::basic_regex<_Elem, _RxTraits> &            _Re,
+              std::regex_constants::match_flag_type _Flgs = std::regex_constants::match_default)
+{
+  std::match_results<
+    typename std::basic_string_view<_Elem, _StTraits>::const_iterator,
+    std::allocator<std::sub_match<std::basic_string_view<_Elem, _StTraits>::const_iterator>>>
+    _Matches;
+  // try to match regular expression to target text
+  _Regex_match1(_Str.begin(), _Str.end(), _STD addressof(_Matches), _Re, _Flgs, true);
+  return _Matches;
+}
+
 template <class _Col, class _Ty>
 inline bool contains(const _Col & _Collection, const _Ty & _Val)
 {
@@ -469,6 +484,27 @@ struct whileTrue
     auto val = v;
     v        = false;
     return val;
+  }
+};
+
+  struct to_string_view
+{
+  template <typename T>
+  constexpr std::string_view operator()(T && t) const
+  {
+    return std::string_view(&*t.first, t.length());
+  }
+};
+
+template <typename IntType = int>
+struct sub_match_to_int
+{
+  template <typename T>
+  constexpr IntType operator()(T && nrS) const
+  {
+    IntType i   = std::numeric_limits<IntType>::min();
+    auto    res = std::from_chars(&*nrS.first, &*nrS.first + nrS.length(), i);
+    return i;
   }
 };
 
