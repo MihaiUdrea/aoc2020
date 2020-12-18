@@ -2,10 +2,10 @@
 #include "stdafx.h"
 #include "Utils.h"
 
-//#define THISDAY "day18"
+#define THISDAY "day18"
 
-//#define FIRST_STAR  ""
-//#define SECOND_STAR ""
+#define FIRST_STAR  "7293529867931"
+#define SECOND_STAR "60807587180737"
 
 #ifdef THISDAY
   #define TODAY THISDAY "/"
@@ -38,26 +38,7 @@ struct Solve
   vector<string> input;
 
   Solve(const string & inStr){
-
     input = GetLines(inStr);
-
-    /** /
-    forEachLine(inStr, [&](string line) {
-      static const regex matchExp(R"~((\d+)-(\d+) (.): (\w+))~");
-      auto               res = match_rx(line, matchExp);
-      list.push_back({ stoi(res[1]), stoi(res[2]), res[3].str()[0], res[4] });
-    });
-    /**/
-
-    /** /
-    forEachLine(inStr, [&](string line) {
-      static const regex colsSepRx(":");
-      forEachRxToken(line, colsSepRx, [&](string chunk) {
-        int i = 0;
-        i++;
-      });
-    });
-    /**/
   };
 
   INT64 Evaluate2(string left, string right, char op) 
