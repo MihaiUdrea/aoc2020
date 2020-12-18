@@ -74,9 +74,9 @@ struct Solve
 
     for (auto ticket : nearByTicket | views::filter(validTicketsOp))
       for (auto [idxk, no] : ticket | views::enumerate)
-        for (auto [idxw, field] : labelsList | views::enumerate)
-          if (!field.Allows(no))
-            nokPos[idxk].insert(idxw);
+        for (auto [idxw, field] : labelsList | views::enumerate 
+          | views::filter([no](auto e) {return !e.second.Allows(no);}))
+          nokPos[idxk].insert(idxw);
 
     vector<int> goodPos(labelsList.size());
 
