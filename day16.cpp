@@ -89,8 +89,7 @@ struct Solve
       | to<vector>() 
       | actions::sort(greater{}, &pair<int, int>::second))
     {
-      auto newGoodPos = unsettled | views::filter([&](auto i) { 
-        return !nokPos[field].contains(i); });
+      auto newGoodPos = unsettled | views::set_difference(nokPos[field]);
 
       goodPos[field] = front(newGoodPos);
 
