@@ -92,9 +92,9 @@ struct Solve
       auto newGoodPos = unsettled | views::filter([&](auto i) { 
         return !nokPos[field].contains(i); });
 
-      goodPos[field] = *begin(newGoodPos);
+      goodPos[field] = front(newGoodPos);
 
-      unsettled.erase(*begin(newGoodPos));
+      unsettled.erase(front(newGoodPos));
     }
 
     return to_string(accumulate(goodPos 

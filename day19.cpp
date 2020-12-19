@@ -68,7 +68,7 @@ struct Solve
      for (auto chunk : inStr 
        | views::tokenize(regex("\n\n"), -1) 
        | views::transform(to_string_view()) 
-       | views::drop(1) )
+       | views::drop(1))
       for (auto line : chunk | views::tokenize(regex("\n"), -1))
         input.push_back(line);     
   };
