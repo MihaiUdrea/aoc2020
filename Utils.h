@@ -191,12 +191,13 @@ auto match_rx(const std::basic_string_view<_Elem, _StTraits> & _Str,
   return _Matches;
 }
 
+/** /
 template <class _Col, class _Ty>
 inline bool contains(const _Col & _Collection, const _Ty & _Val)
 {
   return find(_Collection.begin(), _Collection.end(), _Val) != _Collection.end();
 }
-
+/**/
 template <class _Col, class _Pr>
 inline bool contains_pred(const _Col & _Collection, _Pr _Pred)
 {
