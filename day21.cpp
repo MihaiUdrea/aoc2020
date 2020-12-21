@@ -2,10 +2,10 @@
 #include "stdafx.h"
 #include "Utils.h"
 
-//#define THISDAY "day21"
+#define THISDAY "day21"
 
-//#define FIRST_STAR  ""
-//#define SECOND_STAR ""
+#define FIRST_STAR  "2874"
+#define SECOND_STAR "gfvrr,ndkkq,jxcxh,bthjz,sgzr,mbkbn,pkkg,mjbtz"
 
 #ifdef THISDAY
   #define TODAY THISDAY "/"
@@ -187,14 +187,7 @@ struct Solve
 
 #include "catch.hpp"
 
-TEST_CASE(TODAY "Sample 1", HIDE_IF_OLD_TEST "[.]")
-{
-  REQUIRE(Solve(1 + R"(
-xxxxxxxxx)")
-            .Do() == "sample result");
-}
-
-TEST_CASE(TODAY "Part One", HIDE_IF_OLD_TEST "[.]")
+TEST_CASE(TODAY "Part One", HIDE_IF_OLD_TEST "[x.]")
 {
 #ifdef FIRST_STAR
   REQUIRE(Solve(ReadFileToString(TODAY "input.txt")).Do() == FIRST_STAR);
