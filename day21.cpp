@@ -18,7 +18,8 @@
 // disable conversion warning
 #pragma warning(disable : 4267)
 
-  using namespace ranges;
+using namespace ranges;
+using namespace views;
 
 namespace
 {
@@ -33,7 +34,7 @@ struct Solve
     map<int, set<string>> sameingredients;
   };
 
-  vector<food> list;
+  vector<food> foodList;
   /**/
 
   vector<string> input;
@@ -45,88 +46,40 @@ struct Solve
   set<string> settledIng;
 
   Solve(const string & inStr){
-
-    input = GetLines(inStr);
-
-    /**/
-    forEachLine(inStr, [&](string line) {
-      static const regex matchExp(R"~((.+) \(contains ([^)]+)\))~");
-      auto               res = match_rx(line, matchExp);
-    
-      food               newFood;
-
-      static const regex colsSepRx(" ");
-      forEachRxToken(res[1], colsSepRx, [&](string ing) {
+    for (auto line : inStr | tokenize(regex("\n"), -1) | views::transform(to_string_view()))
+    {
+      auto res = match_rx(line, regex(R"~((.+) \(contains ([^)]+)\))~"));
+      auto ingredients = to_string_view::from(std::move(res[1]));
+      auto allergens = to_string_view::from(std::move(res[2]));
+      
+      food newFood;
+      
+      for (auto ing : ingredients | tokenize(regex(" "), -1))
         newFood.ingredients.insert(ing);
-      });
 
-      static const regex colsSepRx2(", ");
-      forEachRxToken(res[2], colsSepRx2, [&](string alergen) {
-        newFood.allergens.insert(alergen);
-      });
+      for (auto allergen : allergens | tokenize(regex(", "), -1))
+        newFood.allergens.insert(allergen);
 
-      list.push_back(std::move(newFood)); 
-    });
-    /**/
-
-    /** /
-    forEachLine(inStr, [&](string line) {
-      static const regex colsSepRx(":");
-      forEachRxToken(line, colsSepRx, [&](string chunk) {
-        int i = 0;
-        i++;
-      });
-    });
-    /**/
-  };
-
-  string Do() { 
-    
-    auto miningredSize = 100;
-    int  p1, p2;
-    for (auto pos : irange(0, list.size()))
-    {
-      auto & food = list[pos];
-      for (auto pos2 : irange(pos + 1, list.size()))
-      {
-        auto & food2 = list[pos2];
-        auto inters = food.ingredients | views::set_intersection(food2.ingredients) | to<set>;
-
-        if (inters.size() < miningredSize)
-        {
-          miningredSize = inters.size();
-          p1            = pos;
-          p2            = pos2;
-        }
-        food2.sameingredients[pos] = inters;
-        food.sameingredients[pos2] = std::move(inters);
-
-        auto inters2 = food.allergens | views::set_intersection(food2.allergens) | to<set>;
-
-        food2.sameallergens[pos] = inters2;
-        food.sameallergens[pos2] = std::move(inters2);
-
-        
-      }
+      foodList.push_back(std::move(newFood)); 
     }
+  }
 
-    for (auto pos : irange(0, list.size()))
+  string Do() 
+  { 
+    for (auto [pos, food] : foodList | views::enumerate)
     {
-      auto & food = list[pos];
-      for (auto & ing : food.ingredients)
+      for (auto ing : food.ingredients)
         ingredientsFoodMap[ing].insert(pos);
-      for (auto & aler : food.allergens)
+      for (auto aler : food.allergens)
         allergenFoodMap[aler].insert(pos);
     }
 
     for (auto & aler : allergenFoodMap)
     {
-      set<string> common_ingred = list[*aler.second.begin()].ingredients;
-      for (auto foodIdx : aler.second)
-      {
-        common_ingred =
-          common_ingred | views::set_intersection(list[foodIdx].ingredients) | to<set>;
-      }
+      set<string> common_ingred = foodList[front(aler.second)].ingredients;
+      for (auto foodIdx : aler.second | tail)
+        common_ingred = common_ingred | views::set_intersection(foodList[foodIdx].ingredients) | to<set>;
+      
       allergenIngredShortList[aler.first] = std::move(common_ingred);
     }
 
@@ -136,9 +89,9 @@ struct Solve
         return e.second.size();
       });
   
-      if (min->second.size() == 1)
+      //if (min->second.size() == 1)
       {
-        string ing                    = *(min->second.begin());
+        string ing = *(min->second.begin());
 
         allergenIngredient[min->first] = ing;
 
@@ -149,39 +102,21 @@ struct Solve
 
         allergenIngredShortList.erase(min);
       }
-      else
-      {
-        // bad
-        MessageBeep(0);
-      }
-
     };
 
-    int count = 0;
-    for (auto ing : ingredientsFoodMap)
-    {
-      if (settledIng.contains(ing.first))
-        continue;
-      
-      count += ing.second.size();
-    }
+    auto rng = ingredientsFoodMap | filter([&](auto x) {
+                 return !settledIng.contains(x.first);
+               }) | values;
 
-    return to_string(count); 
+    return to_string(accumulate(rng, 0, plus{}, &set<int>::size)); 
   }
 
-  string Do2() { 
+  string Do2() 
+  { 
     Do();
 
-    string s;
-    
-    for (auto ing : allergenIngredient)
-    {
-      if (!s.empty())
-        s += ",";
-      s += ing.second;
-    }
-
-    return s; }
+    return allergenIngredient | views::values | join(',') | to<string>;
+  }
 };
 }  // namespace
 

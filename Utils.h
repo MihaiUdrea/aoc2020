@@ -375,16 +375,12 @@ std::string to2Ds(const _Col &                                                  
     max = Point{ limX.second->first.x, limY.second->first.y, limZ.second->first.z };
   }
 
-  int minCol = min.x;
-
-  int lastCol = max.x + 1;
-  // lastCol = 35;
-
-  int minLine  = min.y;
-  int lastLine = max.y + 1;
-
-  int minPlane = min.z;
-  int maxPlane = max.z + 1;
+  int minCol   = (int)min.x;
+  int lastCol  = (int)max.x + 1;
+  int minLine  = (int)min.y;
+  int lastLine = (int)max.y + 1;
+  int minPlane = (int)min.z;
+  int maxPlane = (int)max.z + 1;
 
   if ((mode & to2DsFlags::depth_on) == 0)
   {
@@ -493,6 +489,18 @@ struct whileTrue
 {
   template <typename T>
   constexpr std::string_view operator()(T && t) const
+  {
+    return from(std::move(t));
+  }
+
+  template <typename T>
+  static constexpr std::string_view from(T && t)
+  {
+    return std::string_view(t);
+  }
+ 
+  template <typename T>
+  static constexpr std::string_view from(const std::sub_match<T> && t)
   {
     return std::string_view(&*t.first, t.length());
   }

@@ -62,7 +62,7 @@ struct Solve
       {
         string matrix(line);
         CharMapLimits mapLimits(matrix);
-        tileSize = mapLimits.limit.y;
+        tileSize = (int)mapLimits.limit.y;
 
 
         list[no] = std::move(mapLimits);
@@ -344,6 +344,7 @@ struct Solve
     //area = varea | to<set>;
 
     set<Point> insideMounsters;
+    vector<int> orr;
     for (auto lidx : irange(-11, squareSize * (tileSize - 2)))
       for (auto cidx : irange(-11, squareSize * (tileSize - 2)))
       {
@@ -368,13 +369,20 @@ struct Solve
 
           if (!missing)
           {
+            orr.push_back(v.first.rotation);
+
             for (auto p : mon)
               insideMounsters.insert(p);
           }
         }
       }
 
+    auto rng = orr | views::all;
+    cout << "Orientations: \n";
+    cout << rng;
+    cout << std::endl;
 
+    cout << "Mounsters: " << insideMounsters.size() / 15 << std::endl;
     return to_string(area.size() - insideMounsters.size()); 
   }
 };
