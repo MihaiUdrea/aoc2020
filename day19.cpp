@@ -111,8 +111,7 @@ struct Solve
       for (auto var : r.subrules)
       {
         auto v = ExpandSubRules(var);
-        for (auto i : v)
-          res.insert(i);
+        res.insert(v.begin(), v.end());
       }
     }
     dictionary[ruleIdx] = std::move(res);

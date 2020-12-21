@@ -269,6 +269,7 @@ struct Point
 
 struct CharMapLimits
 {
+  CharMapLimits(){};
   CharMapLimits(const std::string & inStr)
   {
     forEachLineIdx(inStr, [&](std::string line, size_t idxL) {
