@@ -2,10 +2,10 @@
 #include "stdafx.h"
 #include "Utils.h"
 
-//#define THISDAY "day20"
+#define THISDAY "day20"
 
-//#define FIRST_STAR  ""
-//#define SECOND_STAR ""
+#define FIRST_STAR  "45443966642567"
+#define SECOND_STAR "1607"
 
 #ifdef THISDAY
   #define TODAY THISDAY "/"
@@ -37,6 +37,7 @@ struct Solve
   map<int, set<Point>> bordersList;
   map<idAndrotation, set<Point>> allBordersList;
   map<idAndrotation, set<Point>> allArreasList;
+  map<idAndrotation, set<Point>> allDragList;
   /**/
 
   vector<string> input;
@@ -68,6 +69,39 @@ struct Solve
       }
      }
 
+      auto variations = [&](auto & allBordersList, auto & border, auto id) {
+       for (auto i : views::iota(0, 4))
+       {
+         allBordersList[{ id, i }] = border | to<set>;
+
+         // rotate
+         actions::transform(border, [](auto p) {
+           auto newPt = Solve::Rotate(p);
+           newPt.x += 9;
+           return newPt;
+         });
+       }
+
+       // flip it on one axis
+       actions::transform(border, [](auto p) {
+         auto newPt = p;
+         newPt.x    = 9 - newPt.x;
+         return newPt;
+       });
+
+       for (auto i : views::iota(4, 8))
+       {
+         allBordersList[{ id, i }] = border | to<set>;
+
+         // rotate
+         actions::transform(border, [](auto p) {
+           auto newPt = Solve::Rotate(p);
+           newPt.x += 9;
+           return newPt;
+         });
+       }
+     };
+
      // erase mids
      for (auto & e : list)
      {
@@ -78,42 +112,39 @@ struct Solve
 
       auto allArea = e.second.charMap['#'] | to<vector>;
 
-       auto variations = [&](auto & allBordersList, auto & border) {
-         for (auto i : views::iota(0, 4))
-         {
-           allBordersList[{ e.first, i }] = border | to<set>;
-
-           // rotate
-           actions::transform(border, [](auto p) {
-             auto newPt = Solve::Rotate(p);
-             newPt.x += 9;
-             return newPt;
-           });
-         }
-
-         // flip it on one axis
-         actions::transform(border, [](auto p) {
-           auto newPt = p;
-           newPt.x    = 9 - newPt.x;
-           return newPt;
-         });
-
-         for (auto i : views::iota(4, 8))
-         {
-           allBordersList[{ e.first, i }] = border | to<set>;
-
-           // rotate
-           actions::transform(border, [](auto p) {
-             auto newPt = Solve::Rotate(p);
-             newPt.x += 9;
-             return newPt;
-           });
-         }
-       };
-       variations(allBordersList, border);
-       variations(allArreasList, allArea);
+      
+      variations(allBordersList, border, e.first);
+      variations(allArreasList, allArea, e.first);
      };
 
+       CharMapLimits drag(1 + R"(
+                  # 
+#    ##    ##    ###
+ #  #  #  #  #  #   )");
+     auto dragSet = drag.charMap['#'] | to<vector>;
+     variations(allDragList, dragSet, 0);
+
+     for (auto & mons : allDragList)
+     {
+       Point minPt;
+       for (auto p : mons.second)
+       {
+         if (p.x < minPt.x)
+           minPt.x = p.x;
+         if (p.y < minPt.y)
+           minPt.y = p.y;
+       }
+
+       auto vec = mons.second | to<vector>;
+       for (auto & p : vec)
+       {
+         if (minPt.x < 0)
+           p.x += -minPt.x;
+         if (minPt.y < 0)
+           p.y += -minPt.y;
+       }
+       mons.second = vec | to<set>;
+     }
   };
 
   static Point Rotate(Point p, int nr = 90)
@@ -235,38 +266,36 @@ struct Solve
     {
       INT64 prod = 1;
 
-      cout << "soutions" << solutions.size() << std::endl;
+      //cout << "soutions" << solutions.size() << std::endl;
       if (0)
       for (auto corner : solutions[0] | views::reverse | views::take(4))
       {
         prod *= corner.no;
       }
       prod = solutions[0][0].no;
-      cout << prod << "*";
+     // cout << prod << "*";
       int next = solutions[0][squareSize - 1].no;
-      cout << next << "*";
+     // cout << next << "*";
       prod *= next;
       next = solutions[0][list.size() - squareSize].no;
-      cout << next << "*";
+      //cout << next << "*";
       prod *= next;
 
       next=solutions[0][list.size() -1].no;
-      cout << next << "*";
+      //cout << next << "*";
       prod *= next;
 
       return to_string(prod);
     }
 
-    cout << "soutions" << solutions.size() << std::endl;
+    //cout << "soutions" << solutions.size() << std::endl;
 
     return to_string(1); 
   }
 
 
   string Do2() { 
-    Do();
-
-    
+    Do();    
 
     set<Point> area;
     int        count = 0;
@@ -288,132 +317,78 @@ struct Solve
       }
     }
 
-    return to_string(2); 
+    vector varea = area | to<vector>;
+
+    for (auto i : views::iota(0, 2))
+    {
+      // rotate
+      actions::transform(varea, [](auto p) {
+        auto newPt = Solve::Rotate(p);
+        newPt.x += 24;
+        return newPt;
+      });
+    }
+
+    auto ss = to2Ds(
+      varea,
+      [](auto & l, auto pos) {
+        return Point{ l.y, l.x };
+      },
+      [&](auto & l) {
+        return string("#");
+      },
+      to2DsFlags::no_header, '.', 1);
+
+    cout << ss;
+
+    //area = varea | to<set>;
+
+    set<Point> insideMounsters;
+    for (auto lidx : irange(-11, squareSize * (tileSize - 2)))
+      for (auto cidx : irange(-11, squareSize * (tileSize - 2)))
+      {
+        Point p{ lidx, cidx };
+        for (auto v : allDragList)
+        {
+          set<Point> mon;
+          bool missing = false;
+          for (auto pdrag : v.second)
+          {
+            Point newPt = pdrag + p;
+            if (!area.contains(newPt))
+            {
+              missing = true;
+              break;
+            }
+            else
+            {
+              mon.insert(newPt);
+            }
+          }
+
+          if (!missing)
+          {
+            for (auto p : mon)
+              insideMounsters.insert(p);
+          }
+        }
+      }
+
+
+    return to_string(area.size() - insideMounsters.size()); 
   }
 };
 }  // namespace
 
 #include "catch.hpp"
 
-TEST_CASE(TODAY "Sample 1", HIDE_IF_OLD_TEST "[.]")
-{
-  REQUIRE(Solve(1 + R"(
-Tile 2311:
-..##.#..#.
-##..#.....
-#...##..#.
-####.#...#
-##.##.###.
-##...#.###
-.#.#.#..##
-..#....#..
-###...#.#.
-..###..###
-
-Tile 1951:
-#.##...##.
-#.####...#
-.....#..##
-#...######
-.##.#....#
-.###.#####
-###.##.##.
-.###....#.
-..#.#..#.#
-#...##.#..
-
-Tile 1171:
-####...##.
-#..##.#..#
-##.#..#.#.
-.###.####.
-..###.####
-.##....##.
-.#...####.
-#.##.####.
-####..#...
-.....##...
-
-Tile 1427:
-###.##.#..
-.#..#.##..
-.#.##.#..#
-#.#.#.##.#
-....#...##
-...##..##.
-...#.#####
-.#.####.#.
-..#..###.#
-..##.#..#.
-
-Tile 1489:
-##.#.#....
-..##...#..
-.##..##...
-..#...#...
-#####...#.
-#..#.#.#.#
-...#.#.#..
-##.#...##.
-..##.##.##
-###.##.#..
-
-Tile 2473:
-#....####.
-#..#.##...
-#.##..#...
-######.#.#
-.#...#.#.#
-.#########
-.###.#..#.
-########.#
-##...##.#.
-..###.#.#.
-
-Tile 2971:
-..#.#....#
-#...###...
-#.#.###...
-##.##..#..
-.#####..##
-.#..####.#
-#..#.#..#.
-..####.###
-..#.#.###.
-...#.#.#.#
-
-Tile 2729:
-...#.#.#.#
-####.#....
-..#.#.....
-....#..#.#
-.##..##.#.
-.#.####...
-####.#.#..
-##.####...
-##..#.##..
-#.##...##.
-
-Tile 3079:
-#.#.#####.
-.#..######
-..#.......
-######....
-####.#..#.
-.#...#.##.
-#.#####.##
-..#.###...
-..#.......
-..#.###...)")
-            .Do() == "20899048083289");
-}
 
 TEST_CASE(TODAY "Sample 2", HIDE_IF_OLD_TEST "[x.]")
 {
   REQUIRE(Solve(ReadFileToString("sample.txt")).Do2() == "273");
 }
 
-TEST_CASE(TODAY "Part One", HIDE_IF_OLD_TEST "[.]")
+TEST_CASE(TODAY "Part One", HIDE_IF_OLD_TEST "[x.]")
 {
 #ifdef FIRST_STAR
   REQUIRE(Solve(ReadFileToString(TODAY "input.txt")).Do() == FIRST_STAR);
@@ -422,7 +397,7 @@ TEST_CASE(TODAY "Part One", HIDE_IF_OLD_TEST "[.]")
 #endif  // FIRST_STAR
 }
 
-TEST_CASE(TODAY "Part Two", HIDE_IF_OLD_TEST "[.]")
+TEST_CASE(TODAY "Part Two", HIDE_IF_OLD_TEST "[x.]")
 {
 #ifdef SECOND_STAR
   REQUIRE(Solve(ReadFileToString(TODAY "input.txt")).Do2() == SECOND_STAR);
