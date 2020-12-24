@@ -2,10 +2,10 @@
 #include "stdafx.h"
 #include "Utils.h"
 
-//#define THISDAY "day24"
+#define THISDAY "day24"
 
-//#define FIRST_STAR  ""
-//#define SECOND_STAR ""
+#define FIRST_STAR  "434"
+#define SECOND_STAR "3955"
 
 #ifdef THISDAY
   #define TODAY THISDAY "/"
@@ -24,131 +24,64 @@ namespace
 {
 struct Solve
 {
-  /**/
-  struct data
-  {
-    int    start;
-    int    end;
-    char   ch;
-    string pass;
-  };
-
-  vector<data> list;
-  /**/
-
   vector<string> input;
+
+  vector<Point> dir;
+  string dirCh;
+  map<char, Point> chPointMap;
 
   Solve(const string & inStr)
   {
+    dir   = { Point{ -1, -1 }, { -1, 1 }, { 0, 2 }, { 1, 1 }, { 1, -1 }, { 0, -2 } };
+    dirCh = "nNeSsw";
+    for (auto i : views::zip(dir, dirCh))
+    {
+      chPointMap[i.second] = i.first;
+    }    
+
     input = GetLines(inStr);
-
-    /** /
-    forEachLine(inStr, [&](string line) {
-      static const regex matchExp(R"~((\d+)-(\d+) (.): (\w+))~");
-      auto               res = match_rx(line, matchExp);
-      list.push_back({ stoi(res[1]), stoi(res[2]), res[3].str()[0], res[4] });
-    });
-    /**/
-
-    /** /
-    forEachLine(inStr, [&](string line) {
-      static const regex colsSepRx(":");
-      forEachRxToken(line, colsSepRx, [&](string chunk) {
-        int i = 0;
-        i++;
-      });
-    });
-    /**/
   };
 
-  /**/
-  Point GetDelta (char ch, char ch2) 
-  {
-    Point delta;
-    if (ch == 'w')
-    {
-      delta = { 0, -2 };
-    }
-    else if (ch == 'e')
-    {
-      delta = { 0, 2 };
-    }
-    else if (ch == 's')
-    {
-      delta.x = 1;
-      if (ch2 == 'w')
-      {
-        delta.y = -1;
-      }
-      else if (ch2 == 'e')
-      {
-        delta.y = 1;
-      }
-    }
-    else if (ch == 'n')
-    {
-      delta.x = -1;
-      if (ch2 == 'w')
-      {
-        delta.y = -1;
-      }
-      else if (ch2 == 'e')
-      {
-        delta.y = 1;
-      }
-    }
-    return delta;
-  }
   map<Point, int> countList;
 
   set<Point> whites;
   set<Point> blacks;
 
   /**/
-  string Do() { 
-    
-
-
-    for (auto [idx, line] : input | views::enumerate)
+  string Do() 
+  { 
+    for (auto line : input)
     {
-      Point crPos = { 0, 0 };
-
-      //Navigate(crPos, line, 0);
-
-      for (int i = 0; i < line.size(); i++)
-      {
-        char ch = line[i];
-        char ch2 = i == line.size()- 1 ? '-' : line[i + 1];
-
-        Point delta = GetDelta(ch, ch2);
-
-        crPos = crPos + delta;
-
-        if (ch == 's' || ch == 'n')
-          i++;
-      }
+      auto rd = views::zip(line, line | views::drop(1) | views::cycle) |
+                views::transform([](auto l) {
+                  if (l.first == 's' && l.second == 'e')
+                    return 'S';
+                  else if (l.first == 'n' and l.second == 'e')
+                    return 'N';
+                  else
+                    return l.first;
+                }) |
+                views::adjacent_filter([](auto prev, auto next) {
+                  return prev == 'e' || prev == 'w';
+                });
+        // cout << endl << rd;
+        Point crPos = accumulate(rd, Point{}, plus{}, [&](auto ch) {
+        return chPointMap[ch];
+      });
 
       countList[crPos] = countList[crPos] + 1;
     }
   
-    auto res = count_if(countList, [](auto l) {
-      return l.second % 2 == 1;
-    });
-
-    return to_string(res);   
+    return to_string(count_if(countList | views::values, [](auto l) {
+      return l % 2 == 1;
+    }));   
   }
 
   int    GetNeighborCount(Point pt) 
   {
-    vector dir = { Point{ -1, -1 }, { -1, 1 }, { 0, 2 }, { 1, 1 }, { 1, -1 }, { 0, -2 }};
-    int    ct  = 0;
-    for (auto delta : dir)
-    {
-        Point newPt = pt + delta;
-      if (blacks.contains(newPt))
-        ct++;
-    }
-    return ct;
+    return count_if(dir, [&](auto delta) {
+      return blacks.contains(delta + pt);
+    });
   }
 
   void Print()
@@ -174,75 +107,46 @@ struct Solve
   string Do2()
   {
     Do();
+
+    // initial blacks
     for (auto i : countList)
-    {
       if (i.second % 2 == 1)
         blacks.insert(i.first);
-    }
-
 
     for (auto i : irange(0, 100))
     {
-      /** /
-      auto ss = to2Ds(
-        blacks,
-        [](auto & l, auto pos) {
-          return l;
-        },
-        [&](auto & l, auto pos) {
-          return string("#");
-        },
-        to2DsFlags::full_header, '.', 1);
+      // add whites
 
-      cout << ss;
-      /**/
+      //if (0)
+      //for (auto newPt : views::cartesian_product(blacks, dir) | views::transform([](auto l) {
+      //                    return get<0>(l) + get<1>(l);
+      //                  }) |
+      //                    views::filter([&](auto pt) {
+      //                      return !blacks.contains(pt);
+      //                    }))
+      //  whites.insert(newPt);
+      //else
+      for (auto [pt, dir] : views::cartesian_product(blacks, dir))
+        if (!blacks.contains(pt + dir))
+          whites.insert(pt + dir);
 
-      // add whites 
-      for (auto b : blacks)
+      auto toSwitchToBlack = whites | views::filter([&](auto pt) {
+        return GetNeighborCount(pt) == 2;}) | to<vector>;
+      auto toSwitchToWhite = blacks | views::filter([&](auto pt) {
+        auto n = GetNeighborCount(pt); 
+        return n == 0 || n>2;}) | to<vector>;
+
+      for (auto pt : toSwitchToBlack)
       {
-       
-
-        vector dir = { Point{ -1, -1 }, { -1, 1 }, { 0, 2 }, { 1, 1 }, { 1, -1 }, { 0, -2 } };
-        for (auto delta : dir)
-        {
-          Point newPt = b + delta;
-          if (!blacks.contains(newPt))
-            whites.insert(newPt);
-        }
-      }
-      
-      Print();
-
-      map<Point, int> nc;
-      vector<Point>   blacksPt;
-      vector<Point>   whitesPt;
-      for (auto pt : whites)
-      {
-        nc[pt] = GetNeighborCount(pt);
-        whitesPt.push_back(pt);
-      }
-      for (auto pt : blacks)
-      {
-        auto c = GetNeighborCount(pt);
-
-        nc[pt] = c;
-
-        blacksPt.push_back(pt);
+        whites.erase(pt);
+        blacks.insert(pt);
       }
 
-      for (auto pt : blacksPt)
-        if (nc[pt] == 0 || nc[pt] > 2)
-        {
-          blacks.erase(pt);
-          whites.insert(pt);
-        }
-
-      for (auto pt : whitesPt)
-        if (nc[pt] == 2)
-        {
-          whites.erase(pt);
-          blacks.insert(pt);
-        }
+      for (auto pt : toSwitchToWhite)
+      {
+        blacks.erase(pt);
+        whites.insert(pt);
+      }     
     }
     
     return to_string(blacks.size()); 
@@ -278,7 +182,7 @@ wseweeenwnesenwwwswnew)")
             .Do2() == "2208");
 }
 
-TEST_CASE(TODAY "Part One", HIDE_IF_OLD_TEST "[.]")
+TEST_CASE(TODAY "Part One", HIDE_IF_OLD_TEST "[x.]")
 {
 #ifdef FIRST_STAR
   REQUIRE(Solve(ReadFileToString(TODAY "input.txt")).Do() == FIRST_STAR);
