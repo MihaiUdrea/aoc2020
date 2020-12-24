@@ -34,10 +34,12 @@ struct Solve
   {
     dir   = { Point{ -1, -1 }, { -1, 1 }, { 0, 2 }, { 1, 1 }, { 1, -1 }, { 0, -2 } };
     dirCh = "nNeSsw";
-    for (auto i : views::zip(dir, dirCh))
-    {
-      chPointMap[i.second] = i.first;
-    }    
+    chPointMap = views::zip(dirCh, dir) | to<map>;
+
+   // for (auto [pt, ch] : views::zip(dir, dirCh))
+   // {
+   //   chPointMap[ch] = pt;
+   // }    
 
     input = GetLines(inStr);
   };
